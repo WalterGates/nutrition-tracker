@@ -61,7 +61,6 @@ project_options(
 )
 
 # Force colored build output for gcc/clang and clang-tidy
-set(CMAKE_COLOR_DIAGNOSTICS ON)
 if (CMAKE_CXX_CLANG_TIDY)
   set(CMAKE_CXX_CLANG_TIDY "${CMAKE_CXX_CLANG_TIDY};--use-color")
 endif()
