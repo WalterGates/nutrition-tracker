@@ -1,0 +1,26 @@
+{
+    "orez": {
+        "protein": 0.5,
+        "carbo": 0.3,
+        "fat": 0.1,
+        "calories": 100
+    },
+    "ton": {
+        "protein": 0.5,
+        "carbo": 0.3,
+        "fat": 0.1,
+        "calories": 100
+    },
+    "paine": {
+        "protein": 0.5,
+        "carbo": 0.3,
+        "fat": 0.1,
+        "calories": 100
+    },
+    "iaurt": {
+        "protein": 0.5,
+        "carbo": 0.3,
+        "fat": 0.1,
+        "calories": 100
+    }
+}

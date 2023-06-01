@@ -1,0 +1,18 @@
+{
+    "name": "nutrition-tracker",
+    "version": "0.0.1",
+    "dependencies": [
+        "fmt",
+        "sdl2",
+        "range-v3",
+        "nlohmann-json",
+        {
+            "name": "imgui",
+            "features": [
+                "docking-experimental",
+                "sdl2-binding",
+                "opengl3-binding"
+            ]
+        }
+    ]
+}
