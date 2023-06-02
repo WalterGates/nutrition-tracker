@@ -66,16 +66,16 @@ struct FoodProps {
         return (weight * props[value] / props[Food::Weight]);
     }
 
-    [[nodiscard]] constexpr float get_value_from_weight(const size_t value, const float weight) const noexcept {
-        return get_value_from_weight(static_cast<Food::ValueIndex>(value), weight);
+    [[nodiscard]] constexpr float get_value_from_weight(const size_t value_index, const float weight) const noexcept {
+        return get_value_from_weight(static_cast<Food::ValueIndex>(value_index), weight);
     }
 
     [[nodiscard]] constexpr float get_weight_from_value(const Food::ValueIndex value, const float weight) const noexcept {
         return (weight * props[Food::Weight] / props[value]);
     }
 
-    [[nodiscard]] constexpr float get_weight_from_value(const size_t value, const float weight) const noexcept {
-        return get_weight_from_value(static_cast<Food::ValueIndex>(value), weight);
+    [[nodiscard]] constexpr float get_weight_from_value(const size_t value_index, const float weight) const noexcept {
+        return get_weight_from_value(static_cast<Food::ValueIndex>(value_index), weight);
     }
 };
 
@@ -88,4 +88,5 @@ private:
 
 private:
     std::unordered_map<std::string, FoodProps> m_food_props;
+    std::vector<Food> m_rows;
 };
