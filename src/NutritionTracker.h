@@ -1,9 +1,11 @@
 #pragma once
+#include <optional>
 #include <unordered_map>
 #include <range/v3/all.hpp>
 #include <nlohmann/json.hpp>
 #include "Utils.h"
 #include "Application.h"
+#include "imgui_combo_autoselect.h"
 
 using json = nlohmann::json;
 
@@ -43,6 +45,35 @@ struct FoodProps {
     }
 };
 
+using food_values_table_type = std::unordered_map<std::string, FoodProps>;
+
+class EditMealWidget {
+public:
+    EditMealWidget() = default;
+    EditMealWidget(const std::shared_ptr<food_values_table_type>& food_values_table);
+    void draw();
+
+private:
+    void draw_table();
+    void draw_remove_buttons();
+    void draw_add_food_dropdown();
+
+    bool draw_value_row(Food& row);
+    void draw_total_row();
+
+    void reset_ids();
+    void next_column(auto&& func);
+    void recalculate_total();
+
+private:
+    int m_next_id = 0;
+    std::vector<Food> m_rows;
+    Food m_total_row{ .name = "Total" };
+
+    ImGui::ComboAutoSelectData m_dropdown_data{ std::vector<std::string>{} };
+    std::shared_ptr<food_values_table_type> m_food_values_table;
+};
+
 class NutritionTracker : public Application {
 public:
     NutritionTracker();
@@ -51,6 +82,6 @@ private:
     void on_update(double dt) override;
 
 private:
-    std::unordered_map<std::string, FoodProps> m_food_props;
-    std::vector<Food> m_rows;
+    EditMealWidget m_edit_meal_widget;
+    std::shared_ptr<food_values_table_type> m_food_values_table = std::make_shared<food_values_table_type>();
 };
