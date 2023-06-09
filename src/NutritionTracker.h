@@ -2,53 +2,17 @@
 #include <unordered_map>
 #include <range/v3/all.hpp>
 #include <nlohmann/json.hpp>
+#include "Utils.h"
 #include "Application.h"
 
-#define utf8(str) reinterpret_cast<const char*>(u8##str)
-
-
-using namespace std::literals;
-namespace views = ranges::views;
 using json = nlohmann::json;
-
-namespace util {
-
-template <typename T = size_t>
-constexpr auto enumerate = ::views::enumerate | ::views::transform([](auto&& pair) {
-    using second_type = decltype(pair.second);
-    return std::pair<T, second_type>{ static_cast<T>(pair.first), std::forward<second_type>(pair.second) };
-});
-
-template <typename T>
-constexpr auto iota(std::integral auto&& begin, std::integral auto&& end) {
-    return views::iota(static_cast<T>(begin), static_cast<T>(end));
-}
-
-template <typename T>
-auto is_same(T&& value) {
-    using capture_type = std::add_const_t<std::remove_reference_t<T>>;
-    return [value = capture_type{ value }](const auto& other) {
-        return value == other;
-    };
-}
-
-template <typename T>
-auto is_same_ref(T&& value) {
-    using capture_type = std::add_lvalue_reference_t<std::add_const_t<std::remove_reference_t<T>>>;
-    return [value = capture_type{ value }](const auto& other) {
-        return value == other;
-    };
-}
-} // namespace util
 
 
 struct Food {
     std::string name;
     std::array<float, 5> values = { 0.0f };
 
-    static constexpr auto value_names = std::array{
-        "protein"sv, "carbo"sv, "fat"sv, "calories"sv
-    };
+    static constexpr auto value_names = std::array{ "protein"sv, "carbo"sv, "fat"sv, "calories"sv };
 
     enum ValueIndex : size_t {
         Protein = 0,

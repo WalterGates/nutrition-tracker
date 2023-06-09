@@ -5,6 +5,7 @@ set(sources
 )
 
 set(headers
+    ./Utils.h
     ./Application.h
     ./NutritionTracker.h
     ./imgui_combo_autoselect.h

@@ -11,8 +11,8 @@ struct ComboAutoSelectData {
     int index       = -1;
     char input[128] = {};
 
-    ComboAutoSelectData(std::vector<std::string>&& hints, int selected_index = -1)
-        : items(hints) {
+    ComboAutoSelectData(std::vector<std::string> hints, int selected_index = -1)
+        : items(std::move(hints)) {
         if (selected_index > -1 && selected_index < static_cast<int>(items.size())) {
             strncpy(input, items[static_cast<size_t>(selected_index)].c_str(), sizeof(input) - 1);
             index = selected_index;

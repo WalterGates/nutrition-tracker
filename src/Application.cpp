@@ -12,6 +12,7 @@
 #include <ratio>
 
 #include "Application.h"
+#include "Utils.h"
 
 
 Application::Application() {
@@ -43,7 +44,7 @@ Application::Application() {
     m_window = SDL_CreateWindow("Dear ImGui SDL2+OpenGL3 example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720,
         SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 
-    if (!m_window) {
+    if (m_window == nullptr) {
         fmt::print(stderr, fmt::fg(fmt::color::red), "[ERROR] Failed to create window!\n");
     }
 
@@ -60,18 +61,16 @@ Application::Application() {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-    const ImWchar latin_ranges[] = {
-        0x0020, 0x007E, // Basic Latin range
-        0x00A1, 0x024F, // Latin-1 Supplement range
-        0x0100, 0x0173, // Latin Extended-A
+    const auto latin_ranges = std::array<ImWchar, 7>{ 0x0020, 0x007E, // Basic Latin range
+        0x00A1, 0x024F,                                               // Latin-1 Supplement range
+        0x0100, 0x0173,                                               // Latin Extended-A
         // 0x0180, 0x024f, // Latin Extended-B
-        0
-    };
+        0 };
 
     // const auto font = "/usr/share/fonts/noto/NotoSansMono-Bold.ttf";
-    const auto font = "/usr/share/fonts/OTF/Caskaydia Cove Nerd Font Complete Regular.otf";
-    if(!io.Fonts->AddFontFromFileTTF(font, 20.0f, nullptr, latin_ranges)) {
-        fmt::print(fmt::fg(fmt::color::red), "[ERROR]: Font '{}' not found", font);
+    const auto font = "/usr/share/fonts/OTF/Caskaydia Cove Nerd Font Complete Regular.otf"sv;
+    if (io.Fonts->AddFontFromFileTTF(font.data(), 20.0f, nullptr, latin_ranges.data()) == nullptr) {
+        fmt::print(fmt::fg(fmt::color::red), "[ERROR]: Font '{}' not found", font.data());
     }
 
     io.Fonts->Build();
@@ -100,11 +99,15 @@ void Application::run() {
     auto& io  = ImGui::GetIO();
 
     for (auto running = true; running;) {
-        for (auto event = SDL_Event{}; SDL_PollEvent(&event);) {
+        for (auto event = SDL_Event{}; SDL_PollEvent(&event) != 0;) {
             ImGui_ImplSDL2_ProcessEvent(&event);
-            running = !(event.type == SDL_QUIT ||
-                (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE &&
-                    event.window.windowID == SDL_GetWindowID(m_window)));
+            // clang-format off
+            running = (event.type != SDL_QUIT && (
+                event.type != SDL_WINDOWEVENT ||
+                event.window.event != SDL_WINDOWEVENT_CLOSE ||
+                event.window.windowID != SDL_GetWindowID(m_window)
+            ));
+            //clang-format on
         }
 
         // Begin new frame
