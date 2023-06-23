@@ -14,6 +14,8 @@ struct Food {
     std::string name;
     std::array<float, 5> values = { 0.0f };
 
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Food, name, values)
+
     static constexpr auto value_names = std::array{ "protein"sv, "carbo"sv, "fat"sv, "calories"sv };
 
     enum ValueIndex : size_t {
@@ -24,6 +26,7 @@ struct Food {
         Weight
     };
 };
+
 
 struct FoodProps {
     std::array<float, 5> props = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
@@ -51,9 +54,14 @@ class EditMealWidget {
 public:
     EditMealWidget() = default;
     EditMealWidget(const std::shared_ptr<food_values_table_type>& food_values_table);
+    EditMealWidget(const json& json_serial, const std::shared_ptr<food_values_table_type>& food_values_table);
+
     void draw();
+    [[nodiscard]] json serialize();
+    EditMealWidget& deserialize(const json& json_serial);
 
 private:
+    void draw_text_input();
     void draw_table();
     void draw_remove_buttons();
     void draw_add_food_dropdown();
@@ -69,6 +77,9 @@ private:
     int m_next_id = 0;
     std::vector<Food> m_rows;
     Food m_total_row{ .name = "Total" };
+
+    std::string m_title;
+    std::string m_notes;
 
     ImGui::ComboAutoSelectData m_dropdown_data{ std::vector<std::string>{} };
     std::shared_ptr<food_values_table_type> m_food_values_table;

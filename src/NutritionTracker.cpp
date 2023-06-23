@@ -8,17 +8,62 @@
 #include "imgui_combo_autoselect.h"
 
 
+// TODO: Fix `.clang-format` as to not have to override clang-format
+// clang-format off
 EditMealWidget::EditMealWidget(const std::shared_ptr<food_values_table_type>& food_values_table) {
     const auto food_names = *food_values_table | views::transform([](auto&& pair) {
         return std::forward<decltype(pair.first)>(pair.first);
     });
 
-	m_food_values_table = food_values_table;
+    m_food_values_table = food_values_table;
     m_dropdown_data     = ImGui::ComboAutoSelectData{ { food_names.begin(), food_names.end() } };
 }
 
+EditMealWidget::EditMealWidget(const json& json_serial, const std::shared_ptr<food_values_table_type>& food_values_table)
+    : EditMealWidget(food_values_table)
+{
+    deserialize(json_serial);
+}
+// clang-format on
+
+json EditMealWidget::serialize() {
+    auto result = json{};
+    for (const auto& row : m_rows) {
+        result["rows"].push_back(row);
+    }
+
+    result["title"] = m_title;
+    result["notes"] = m_notes;
+    return result;
+}
+
+EditMealWidget& EditMealWidget::deserialize(const json& json_serial) {
+    if (json_serial.contains("rows")) {
+        m_rows.clear();
+        m_rows.reserve(json_serial.at("rows").size());
+
+        for (const auto& row : json_serial["rows"]) {
+            m_rows.push_back(row.get<Food>());
+        }
+        recalculate_total();
+    }
+
+    if (json_serial.contains("title")) {
+        json_serial["title"].get_to(m_title);
+    }
+
+    if (json_serial.contains("notes")) {
+        json_serial["notes"].get_to(m_notes);
+    }
+
+    return *this;
+}
+
 void EditMealWidget::draw() {
-    // TODO: Add text input for meal name and notes
+    draw_text_input();
+    ImGui::Separator();
+    ImGui::NewLine();
+
     draw_table();
 
     ImGui::SameLine();
@@ -27,6 +72,63 @@ void EditMealWidget::draw() {
     ImGui::EndGroup();
 
     draw_add_food_dropdown();
+
+    if (ImGui::Button("Save")) {
+        std::ofstream("res/day0.json") << serialize();
+    }
+}
+
+// clang-format off
+static bool InputText(const std::string_view label, const std::string_view hint, std::string& buffer, const ImVec2 size = {},
+    const ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr)
+{
+    struct UserData {
+        std::string* str                      = nullptr;
+        ImGuiInputTextCallback chain_callback = nullptr;
+        void* chain_callback_user_data        = nullptr;
+    };
+
+    constexpr auto resize_callback = [](ImGuiInputTextCallbackData* data) {
+        auto* user_data = static_cast<UserData*>(data->UserData);
+
+        if (data->EventFlag == ImGuiInputTextFlags_CallbackResize) {
+            auto* str = user_data->str;
+            IM_ASSERT(data->Buf == str->c_str());
+            str->resize(static_cast<size_t>(data->BufTextLen));
+            data->Buf = str->data();
+
+        } else if (user_data->chain_callback != nullptr) {
+            data->UserData = user_data->chain_callback_user_data;
+            return user_data->chain_callback(data);
+        }
+        return 0;
+    };
+
+    auto resize_user_data = UserData{ .str = &buffer, .chain_callback = callback, .chain_callback_user_data = user_data };
+
+    // FIXME: Pressing escape clears the text input to the state it was in when it was last focused. This is incredibly
+    // frustrating for vim users who instinctively press escape whenever they are done typing something
+    return ImGui::InputTextEx(label.data(), hint.data(), buffer.data(), static_cast<int>(buffer.size()), size,
+        flags | ImGuiInputTextFlags_CallbackResize, resize_callback, &resize_user_data);
+}
+
+static bool InputText(const std::string_view label, std::string& buffer, const ImVec2 size = {},
+    const ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr)
+{
+    return InputText(label, "", buffer, size, flags, callback, user_data);
+}
+// clang-format on
+
+void EditMealWidget::draw_text_input() {
+    const auto screen_width    = ImGui::GetContentRegionAvail().x;
+    const auto min_input_width = ImGui::CalcTextSize("a").x * 30;
+    const auto input_width     = std::max(std::min(min_input_width, screen_width), screen_width * 0.5f);
+
+    // TODO: Change the title hint to the auto-generated title based on the time that will be used
+    // if the user leaves this text input empty.
+    InputText("##meal_title", "Enter the title of this meal", m_title, ImVec2{ input_width, 0 });
+    InputText("##meal_notes", "Enter notes about this meal", m_notes, ImVec2{ input_width, ImGui::GetFontSize() * 6 },
+        ImGuiInputTextFlags_Multiline);
 }
 
 void EditMealWidget::draw_table() {
@@ -197,8 +299,6 @@ NutritionTracker::NutritionTracker() {
         auto is_valid   = (json_props.size() == Food::value_names.size());
         auto food_props = FoodProps{};
 
-        // FIXME: using the enumerated index as the positional key, this will break if the props are out of order in the json
-        // file
         for (auto&& [index, name] : Food::value_names | views::enumerate) {
             is_valid &= (json_props.contains(name) && json_props[name].is_number());
             if (!is_valid) {
@@ -216,11 +316,12 @@ NutritionTracker::NutritionTracker() {
     }
 
     // NOTE: The `EditMealWidget` constructor needs the finalized food hash table because it creates a copy of it's keys
-    m_edit_meal_widget = EditMealWidget{ m_food_values_table };
+    m_edit_meal_widget = EditMealWidget{ json::parse(std::ifstream{ "res/day0.json" }), m_food_values_table };
 }
 
 void NutritionTracker::on_update(double /*dt*/) {
     // TODO: Make windows pop out
+    // TODO: Add DPI awareness
     ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
     static bool show_demo_window = true;
