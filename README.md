@@ -10,9 +10,11 @@ of your history over time, and to plan meals by their nutritional value.
 
 You will need `git`, `cmake`, and some sort of C/C++ tool chain.
 
-    git clone https://github.com/WalterGates/nutrition-tracker.git
-    cmake . -B build
-    cmake --build build -j 16
+```sh
+git clone https://github.com/WalterGates/nutrition-tracker.git
+cmake . -B build
+cmake --build build -j 16
+```
 
 Note: This project uses `vcpkg`. If you already have it installed in the default
 location, we will just use that. In case you have it installed to another location
