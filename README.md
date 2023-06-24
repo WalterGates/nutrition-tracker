@@ -12,6 +12,7 @@ You will need `git`, `cmake`, and some sort of C/C++ tool chain.
 
 ```sh
 git clone https://github.com/WalterGates/nutrition-tracker.git
+cd nutrition-tracker
 cmake . -B build
 cmake --build build -j 16
 ```
