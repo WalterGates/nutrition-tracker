@@ -67,8 +67,7 @@ Application::Application() {
         // 0x0180, 0x024f, // Latin Extended-B
         0 };
 
-    // const auto font = "/usr/share/fonts/noto/NotoSansMono-Bold.ttf";
-    const auto font = "/usr/share/fonts/OTF/Caskaydia Cove Nerd Font Complete Regular.otf"sv;
+    const auto font = "res/CascadiaCode-Regular.otf"sv;
     if (io.Fonts->AddFontFromFileTTF(font.data(), 20.0f, nullptr, latin_ranges.data()) == nullptr) {
         fmt::print(fmt::fg(fmt::color::red), "[ERROR]: Font '{}' not found", font.data());
     }
