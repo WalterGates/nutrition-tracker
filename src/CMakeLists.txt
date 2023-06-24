@@ -13,9 +13,9 @@ set(headers
 
 # The OpenGL library's name differs across operating systems.
 set(OpenGL
-    $<$<CMAKE_SYSTEM_NAME:Linux>:GL>
-    $<$<CMAKE_SYSTEM_NAME:Windows>:opengl32>
-    $<$<CMAKE_SYSTEM_NAME:Darwin>:-framework OpenGL>
+    "$<$<PLATFORM_ID:Linux>:GL>" 
+    "$<$<PLATFORM_ID:Windows>:opengl32>"
+    "$<$<PLATFORM_ID:Darwin>:-framework OpenGL>"
 )
 
 add_executable(main WIN32 ${sources} ${headers})
@@ -24,7 +24,9 @@ target_link_libraries(main PRIVATE project_options project_warnings)
 # find and link dependencies
 target_find_dependencies(main PRIVATE_CONFIG fmt imgui SDL2 range-v3 nlohmann_json)
 target_link_system_libraries(main PRIVATE
-    fmt::fmt imgui::imgui SDL2::SDL2 range-v3::range-v3 nlohmann_json::nlohmann_json OpenGL
+    fmt::fmt imgui::imgui range-v3::range-v3 nlohmann_json::nlohmann_json ${OpenGL}
+    $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
+    $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
 )
 
 # Package the project

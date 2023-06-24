@@ -128,8 +128,8 @@ void Application::run() {
     }
 }
 
-int main() {
-    if (auto app = create_application(); Application::is_initialized()) {
+int main(int /*argc*/, char* /*argv*/[]) {
+    if (auto app = create_application(); app->is_initialized()) {
         app->run();
         return EXIT_SUCCESS;
     }
